@@ -1,0 +1,78 @@
+{
+  "name": "SERVER_HEALTH_MANUAL",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [-1168, 384],
+      "id": "tg-trigger-id",
+      "name": "TG_TRIGGER",
+      "webhookId": "YOUR_UNIQUE_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Health Monitor Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            { "conditions": { "conditions": [{ "leftValue": "={{$json.message.text}}", "rightValue": "/screenshot", "operator": { "type": "string", "operation": "equals" } }] } },
+            { "conditions": { "conditions": [{ "leftValue": "={{$json.message.text}}", "rightValue": "/status", "operator": { "type": "string", "operation": "equals" } }] } },
+            { "conditions": { "conditions": [{ "leftValue": "={{$json.message.text}}", "rightValue": "/help", "operator": { "type": "string", "operation": "equals" } }] } },
+            { "conditions": { "conditions": [{ "leftValue": "={{$json.message.text}}", "rightValue": "/reboot", "operator": { "type": "string", "operation": "equals" } }] } },
+            { "conditions": { "conditions": [{ "leftValue": "={{$json.message.text}}", "rightValue": "/abort", "operator": { "type": "string", "operation": "equals" } }] } },
+            { "conditions": { "conditions": [{ "leftValue": "={{$json.message.text}}", "rightValue": "/updates", "operator": { "type": "string", "operation": "equals" } }] } },
+            { "conditions": { "conditions": [{ "leftValue": "={{$json.message.text}}", "rightValue": "/top", "operator": { "type": "string", "operation": "equals" } }] } }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [-896, 304],
+      "id": "switch-id",
+      "name": "CMD_SWITCH"
+    },
+    {
+      "parameters": {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"# Screenshot Logic Placeholder\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [128, -240],
+      "id": "exec-screenshot-id",
+      "name": "TAKE_SCREENSHOT"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{$node[\"FORMAT_TELEGRAM\"].json.text}}",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 256],
+      "id": "tg-send-id",
+      "name": "Send a text message",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Health Monitor Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "TG_TRIGGER": { "main": [[{ "node": "CMD_SWITCH", "type": "main", "index": 0 }]] },
+    "CMD_SWITCH": { "main": [[{ "node": "TAKE_SCREENSHOT", "type": "main", "index": 0 }], [{ "node": "CPU", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "instanceId": "sanitized-id" }
+}
